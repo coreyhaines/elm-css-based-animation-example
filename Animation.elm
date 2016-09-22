@@ -57,12 +57,12 @@ transitionTask animation delay =
 
 
 startShowHideAnimation : ShowHideStateAnimationDelays -> ShowHideAnimation -> Cmd ShowHideAnimation
-startShowHideAnimation delays state =
+startShowHideAnimation delays animation =
     let
         delaysRecord =
             delaysForShowHideState delays
     in
-        case state of
+        case animation of
             Done Hide ->
                 transitionTask (Setup Show) (delaysRecord Show).setup
 
@@ -74,12 +74,12 @@ startShowHideAnimation delays state =
 
 
 transitionShowHideAnimationState : ShowHideStateAnimationDelays -> ShowHideAnimation -> Cmd ShowHideAnimation
-transitionShowHideAnimationState delays currentState =
+transitionShowHideAnimationState delays currentAnimation =
     let
         delaysRecord =
             delaysForShowHideState delays
     in
-        case currentState of
+        case currentAnimation of
             Setup state ->
                 transitionTask (Animate state) (delaysRecord state).setup
 
@@ -91,8 +91,8 @@ transitionShowHideAnimationState delays currentState =
 
 
 classesForShowHideStateAnimations : ShowHideAnimation -> String
-classesForShowHideStateAnimations state =
-    case state of
+classesForShowHideStateAnimations animation =
+    case animation of
         Setup Show ->
             "animating"
 
@@ -110,6 +110,33 @@ classesForShowHideStateAnimations state =
 
         Done Hide ->
             ""
+
+
+invertShowHideState : ShowHideAnimation -> ShowHideAnimation
+invertShowHideState animation =
+    let
+        oppositeState currentState =
+            case currentState of
+                Show ->
+                    Hide
+
+                Hide ->
+                    Show
+    in
+        case animation of
+            Setup a ->
+                Setup <| oppositeState a
+
+            Animate a ->
+                Animate <| oppositeState a
+
+            Done a ->
+                Done <| oppositeState a
+
+
+classesForShowHideStateAnimationInverted : ShowHideAnimation -> String
+classesForShowHideStateAnimationInverted =
+    invertShowHideState >> classesForShowHideStateAnimations
 
 
 showHideIsInTransitTo : ShowHideState -> ShowHideAnimation -> Bool

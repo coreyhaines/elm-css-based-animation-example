@@ -1,0 +1,1 @@
+elm make src/Start.elm --output elm.js

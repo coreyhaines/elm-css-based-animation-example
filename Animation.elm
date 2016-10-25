@@ -41,6 +41,22 @@ standardShortDelays =
     }
 
 
+standardMediumDelays : AnimationDelays
+standardMediumDelays =
+    { setup = 10
+    , animate = 300
+    , done = 0
+    }
+
+
+standardLongDelays : AnimationDelays
+standardLongDelays =
+    { setup = 10
+    , animate = 1000
+    , done = 0
+    }
+
+
 delaysForShowHideState : ShowHideStateAnimationDelays -> ShowHideState -> AnimationDelays
 delaysForShowHideState delays state =
     case state of
@@ -112,31 +128,32 @@ classesForShowHideStateAnimations animation =
             ""
 
 
-invertShowHideState : ShowHideAnimation -> ShowHideAnimation
-invertShowHideState animation =
-    let
-        oppositeState currentState =
-            case currentState of
-                Show ->
-                    Hide
+invertShowHideState : ShowHideState -> ShowHideState
+invertShowHideState state =
+    case state of
+        Show ->
+            Hide
 
-                Hide ->
-                    Show
-    in
-        case animation of
-            Setup a ->
-                Setup <| oppositeState a
+        Hide ->
+            Show
 
-            Animate a ->
-                Animate <| oppositeState a
 
-            Done a ->
-                Done <| oppositeState a
+invertShowHideStateForAnimation : ShowHideAnimation -> ShowHideAnimation
+invertShowHideStateForAnimation animation =
+    case animation of
+        Setup a ->
+            Setup <| invertShowHideState a
+
+        Animate a ->
+            Animate <| invertShowHideState a
+
+        Done a ->
+            Done <| invertShowHideState a
 
 
 classesForShowHideStateAnimationInverted : ShowHideAnimation -> String
 classesForShowHideStateAnimationInverted =
-    invertShowHideState >> classesForShowHideStateAnimations
+    invertShowHideStateForAnimation >> classesForShowHideStateAnimations
 
 
 showHideIsInTransitTo : ShowHideState -> ShowHideAnimation -> Bool

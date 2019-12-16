@@ -1,8 +1,8 @@
-module Start exposing (..)
+module Start exposing (Model, Msg(..), fader, faderDelay, init, main, twoFaders, update, view)
 
 import Animation
-import Html.App as App
-import Html exposing (Html, text, div, h1)
+import Browser
+import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 
@@ -29,8 +29,8 @@ faderDelay =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( { name = "Elm Remote Conf"
       , faderAnimation = Animation.Done Animation.Hide
       , fader2Animation = Animation.Done Animation.Hide
@@ -50,9 +50,9 @@ update msg model =
                 transitionCmd =
                     Animation.startShowHideAnimation faderDelay model.faderAnimation
             in
-                ( model
-                , Cmd.map TransitionFaderAnimation transitionCmd
-                )
+            ( model
+            , Cmd.map TransitionFaderAnimation transitionCmd
+            )
 
         TransitionFaderAnimation animation ->
             let
@@ -62,18 +62,18 @@ update msg model =
                 transitionCmd =
                     Animation.transitionShowHideAnimationState faderDelay animation
             in
-                ( { model | faderAnimation = animation }
-                , Cmd.map TransitionFaderAnimation transitionCmd
-                )
+            ( { model | faderAnimation = animation }
+            , Cmd.map TransitionFaderAnimation transitionCmd
+            )
 
         ShowFader2 ->
             let
                 transitionCmd =
                     Animation.startShowHideAnimation faderDelay model.fader2Animation
             in
-                ( model
-                , Cmd.map TransitionFader2Animation transitionCmd
-                )
+            ( model
+            , Cmd.map TransitionFader2Animation transitionCmd
+            )
 
         TransitionFader2Animation animation ->
             let
@@ -83,9 +83,9 @@ update msg model =
                 transitionCmd =
                     Animation.transitionShowHideAnimationState faderDelay animation
             in
-                ( { model | fader2Animation = animation }
-                , Cmd.map TransitionFader2Animation transitionCmd
-                )
+            ( { model | fader2Animation = animation }
+            , Cmd.map TransitionFader2Animation transitionCmd
+            )
 
 
 fader : Model -> Html Msg
@@ -93,7 +93,7 @@ fader model =
     let
         contentHtml =
             case model.faderAnimation of
-                Animation.Done (Animation.Hide) ->
+                Animation.Done Animation.Hide ->
                     text ""
 
                 _ ->
@@ -105,12 +105,12 @@ fader model =
                         ]
                         [ text "This fades in and out" ]
     in
-        div []
-            [ div
-                [ onClick ShowFader ]
-                [ text "Fader" ]
-            , contentHtml
-            ]
+    div []
+        [ div
+            [ onClick ShowFader ]
+            [ text "Fader" ]
+        , contentHtml
+        ]
 
 
 twoFaders : Model -> Html Msg
@@ -134,11 +134,11 @@ twoFaders model =
                     [ text <| "Goodbye, " ++ model.name ]
                 ]
     in
-        div []
-            [ div [ onClick ShowFader2 ]
-                [ text "Two Faders" ]
-            , contentHtml
-            ]
+    div []
+        [ div [ onClick ShowFader2 ]
+            [ text "Two Faders" ]
+        , contentHtml
+        ]
 
 
 view : Model -> Html Msg
@@ -152,9 +152,8 @@ view model =
         ]
 
 
-main : Program Never
 main =
-    App.program
+    Browser.element
         { init = init
         , update = update
         , view = view

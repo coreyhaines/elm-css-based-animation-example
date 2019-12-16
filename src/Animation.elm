@@ -1,8 +1,8 @@
-module Animation exposing (..)
+module Animation exposing (Animation(..), AnimationDelays, ShowHideAnimation, ShowHideState(..), ShowHideStateAnimationDelays, classesForShowHideStateAnimationInverted, classesForShowHideStateAnimations, delaysForShowHideState, invertShowHideState, invertShowHideStateForAnimation, showHideIsInTransitTo, showHideIsInTransitToHide, showHideIsInTransitToShow, standardLongDelays, standardMediumDelays, standardShortDelays, startShowHideAnimation, transitionShowHideAnimationState, transitionTask)
 
-import Task
 import Process
-import Time exposing (Time, millisecond)
+import Task
+import Time exposing (Posix)
 
 
 type Animation state
@@ -12,9 +12,9 @@ type Animation state
 
 
 type alias AnimationDelays =
-    { setup : Time
-    , animate : Time
-    , done : Time
+    { setup : Int
+    , animate : Int
+    , done : Int
     }
 
 
@@ -67,9 +67,11 @@ delaysForShowHideState delays state =
             delays.show
 
 
-transitionTask : Animation state -> Time -> Cmd (Animation state)
+transitionTask : Animation state -> Int -> Cmd (Animation state)
 transitionTask animation delay =
-    Task.perform identity (always animation) (Process.sleep <| delay * millisecond)
+    toFloat delay
+        |> Process.sleep
+        |> Task.perform (always animation)
 
 
 startShowHideAnimation : ShowHideStateAnimationDelays -> ShowHideAnimation -> Cmd ShowHideAnimation
@@ -78,15 +80,15 @@ startShowHideAnimation delays animation =
         delaysRecord =
             delaysForShowHideState delays
     in
-        case animation of
-            Done Hide ->
-                transitionTask (Setup Show) (delaysRecord Show).setup
+    case animation of
+        Done Hide ->
+            transitionTask (Setup Show) (delaysRecord Show).setup
 
-            Done Show ->
-                transitionTask (Setup Hide) (delaysRecord Hide).setup
+        Done Show ->
+            transitionTask (Setup Hide) (delaysRecord Hide).setup
 
-            _ ->
-                Cmd.none
+        _ ->
+            Cmd.none
 
 
 transitionShowHideAnimationState : ShowHideStateAnimationDelays -> ShowHideAnimation -> Cmd ShowHideAnimation
@@ -95,15 +97,15 @@ transitionShowHideAnimationState delays currentAnimation =
         delaysRecord =
             delaysForShowHideState delays
     in
-        case currentAnimation of
-            Setup state ->
-                transitionTask (Animate state) (delaysRecord state).setup
+    case currentAnimation of
+        Setup state ->
+            transitionTask (Animate state) (delaysRecord state).setup
 
-            Animate state ->
-                transitionTask (Done state) (delaysRecord state).animate
+        Animate state ->
+            transitionTask (Done state) (delaysRecord state).animate
 
-            Done _ ->
-                Cmd.none
+        Done _ ->
+            Cmd.none
 
 
 classesForShowHideStateAnimations : ShowHideAnimation -> String
